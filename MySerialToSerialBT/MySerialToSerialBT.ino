@@ -56,25 +56,44 @@ void loop() {
     M5.update();    //Read the press state of the key.
   
     M5.dis.drawpix(0, (MyMode == 0)? LED_BLUE: LED_GREEN); //Light the LED with the specified RGB color 00ff00(Atom-Matrix has only one light).
+    return;
   }
+
+  // できる限り読みこぼしがないように、
+  // 送受信が連続している間は
+  // 続けて受信／送信させる
+  // なお受信バッファは64byteとのこと、それよりも多くループさせている
+  uint16_t cnt = 0;
+  bool continuous = true;
+
+  while (continuous && (cnt < 1024)) {
+    continuous = false;
+    cnt = cnt + 1;
+    
+    // UART Serial <-> Bluetooth
+    if (MyMode == 0) {
+      if (Serial2.available()) {
+        SerialBT.write(Serial2.read());
+        continuous = true;
+      }
+      if (SerialBT.available()) {
+        Serial2.write(SerialBT.read());
+        continuous = true;
+      }
+    }
+    // USB Serial <-> Bluetooth
+    if (MyMode == 1) {
+      if (Serial.available()) {
+        SerialBT.write(Serial.read());
+        continuous = true;
+      }
+      if (SerialBT.available()) {
+        Serial.write(SerialBT.read());
+        continuous = true;
+      }
+    }
+    
+  } // while
   
-  // UART Serial <-> Bluetooth
-  if (MyMode == 0) {
-    if (Serial2.available()) {
-      SerialBT.write(Serial2.read());
-    }
-    if (SerialBT.available()) {
-      Serial2.write(SerialBT.read());
-    }
-  }
-  // USB Serial <-> Bluetooth
-  if (MyMode == 1) {
-    if (Serial.available()) {
-      SerialBT.write(Serial.read());
-    }
-    if (SerialBT.available()) {
-      Serial.write(SerialBT.read());
-    }
-  }
-  delay(1); // サンプルプログラムは20だった
+  delay(1); // サンプルプログラムが20だった
 }
