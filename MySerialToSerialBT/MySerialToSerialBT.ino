@@ -14,8 +14,8 @@
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
-#define TXPIN  (22)
-#define RXPIN  (26)
+#define TXPIN  (19)
+#define RXPIN  (23)
 
 // Atom Lite
 const bool SerialEnable = true;
